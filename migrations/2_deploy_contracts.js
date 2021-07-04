@@ -1,6 +1,7 @@
 const AvastarTeleporter = artifacts.require("./AvastarTeleporter.sol");
 const AvastarMetadata = artifacts.require("./AvastarMetadata.sol");
 const AvastarPrimeMinter = artifacts.require("./AvastarPrimeMinter.sol");
+const AvastarReplicantMinter = artifacts.require("./AvastarReplicantMinter.sol");
 const constants = require("../util/Constants");
 const AccountManager = require("../util/AccountManager");
 const BN = require('bn.js');
@@ -13,7 +14,7 @@ module.exports = (deployer, network, liveAccounts) => {
         const currentAdmin = liveAccounts[0];
         const accounts = AccountManager.getAccounts(environment);
         const {owners, minters} = accounts;
-        const admins = accounts.admins.filter(acct => acct !== currentAdmin);
+        const admins = accounts.admins.filter(acct => acct.toUpperCase() !== currentAdmin.toUpperCase());
         let promises;
 
         // Deploy the Avastar Teleporter, Prime Minter, and Metadata contracts
@@ -21,6 +22,7 @@ module.exports = (deployer, network, liveAccounts) => {
         const avastarTeleporter = await deployer.deploy(AvastarTeleporter);
         const avastarPrimeMinter = await deployer.deploy(AvastarPrimeMinter);
         const avastarMetadata = await deployer.deploy(AvastarMetadata);
+        const avastarReplicantMinter = await deployer.deploy(AvastarReplicantMinter);
 
         // Prepare the Avastar Metadata contract for use
         console.log("----------------------------------");
@@ -76,11 +78,30 @@ module.exports = (deployer, network, liveAccounts) => {
         promises = admins.map(admin => avastarPrimeMinter.addSysAdmin(admin));
         promises.concat(owners.map(owner => avastarPrimeMinter.addOwner(owner)));
         promises.concat(minters.map(minter => avastarPrimeMinter.addMinter(minter)));
+        await Promise.all(promises);
 
         console.log("Set current generation");
         await avastarPrimeMinter.setCurrentGeneration(generation); // auto resets sets series
 
         console.log("Unpause\n");
         await avastarPrimeMinter.unpause();
+
+        // Prepare the Avastar Replicant Minter contract for use
+        console.log("-----------------------------------------");
+        console.log("Preparing AvastarReplicantMinter contract");
+        console.log("-----------------------------------------");
+
+        console.log("Set teleporter contract address");
+        await avastarReplicantMinter.setTeleporterContract(avastarTeleporter.address);
+
+        console.log("Add admins, owners, minters");
+        promises = admins.map(admin => avastarReplicantMinter.addSysAdmin(admin));
+        promises.concat(owners.map(owner => avastarReplicantMinter.addOwner(owner)));
+        promises.concat(minters.map(minter => avastarReplicantMinter.addMinter(minter)));
+        await Promise.all(promises);
+
+        console.log("Unpause\n");
+        await avastarReplicantMinter.unpause();
+
     });
 };

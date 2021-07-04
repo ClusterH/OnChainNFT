@@ -31,8 +31,8 @@ module.exports = {
             ),
             network_id: "4",
             skipDryRun: true,
-            gasPrice: 12000000000, // 12 GWei
-            gas: 8000000
+            gasPrice: 168000000000, // 168 GWei in Wei
+            gas: 10000000
         },
         ropsten: {
             provider: () => new HDWalletProvider(
@@ -43,7 +43,7 @@ module.exports = {
             ),
             network_id: "3",
             skipDryRun: true,
-            gasPrice: 12000000000, // 12 GWei
+            gasPrice: 168000000000, // 168 GWei in Wei
             gas: 8000000
         },
         mainnet: {
@@ -55,8 +55,8 @@ module.exports = {
             ),
             network_id: "1",
             skipDryRun: true,
-            gasPrice: 12000000000, // 12 GWei
-            gas: 9900000
+            gasPrice: 168000000000, // 168 GWei in Wei
+            gas: 12000000
         }
     },
     mocha: {
